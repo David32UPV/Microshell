@@ -30,9 +30,9 @@ int ejecutar (int nordenes , int *nargs , char **ordenes , char ***args , int bg
 		// Hijo
 		if(val == 0){
 			// Antes de cambiar la imagen se han de resolver las redirecciones de las ordenes
-			redirigir_entrada_profe(i);		// i = orden 0, orden 1, orden 2, ...
-			redirigir_salida_profe(i);
-			cerrar_fd_profe();
+			redirigir_entrada(i);		// i = orden 0, orden 1, orden 2, ...
+			redirigir_salida(i);
+			cerrar_fd();
 			// ordenes[i] es el nombre del archivo ejecutable el cual contiene el nombre de la orden a ejecutar (e.g. ls, car, greo, etc.)
 			// args[i] es un array de punteros a cadenas de caracteres (el conjunto de argumentos que se pasan al programa que se va a ejecutar)
 			// e.g si yo pongo ls -l | grep profe, el execv seria execvp("ls", ["ls", "-l", NULL]); y esto reemplaza al hijo con el proceso que ejecuta ls -l.
@@ -44,7 +44,7 @@ int ejecutar (int nordenes , int *nargs , char **ordenes , char ***args , int bg
 
 	}
 	
-	cerrar_fd_profe();
+	cerrar_fd();
 	// Esperar a que los hijos acaben antes de continuar y devolver el OK
 	while(wait(NULL) != -1);
 

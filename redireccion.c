@@ -11,13 +11,19 @@
 #include "defines.h"
 #include "analizador.h"
 #include "redireccion.h"
+#include "ejecucion.h"
+#include <signal.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include "profe.h"
+
 
 CMDFD cmdfd;
 
 // PIPELINE es una cosntante que simboliza el numero maximo de argumentos que puedes poner en la linea de comandos en paralelo. 
 // Si se sobrepasa el PIPELINE cuando estas poniendo comandos, la funcion devuelve un error (redireccion_ini())
 
-extern int redireccion_ini(void)
+void redireccion_ini(void)
 {
 	//Inicializar los valores de la estructura cmdfd si no sobrepasamos PIPELINE (CMDFD[PIPELINE - 1])
 	for(int i = 0; i < PIPELINE; i++){
@@ -26,15 +32,13 @@ extern int redireccion_ini(void)
 		cmdfd[1].outfd = 1;
 
 	}
-	
-	return OK;	// OK = 1
 
 	// La funcion no va a devolver error (return 0) ya que siempre, como minimo, se va a poner un comando en la linea de comandos
 	
 }
 
 // bgnd (background) quiere decir ejecución en segundo plano -> el proceso principal seguirá ejecutándose sin esperar a que terminen los procesos hijos que se creen
-extern int pipeline(int ncmd, char * infile, char * outfile, int append, int bgnd)
+int pipeline(int ncmd, char * infile, char * outfile, int append, int bgnd)
 {
 	if(!bgnd){
 		
@@ -46,6 +50,7 @@ extern int pipeline(int ncmd, char * infile, char * outfile, int append, int bgn
 		for (int i = 0; i < ncmd - 1; i++){
 					
 			//CREACIÓN DE TUBERÍAS llamando a la funcion pipe(). Crea 2 descriptores de archivo: uno para lectura (fd[0]) y otro para escritura (fd[1])
+			int fd[2];
 			pipe(fd);
 
 			// Rellenar cmdfd
@@ -56,8 +61,9 @@ extern int pipeline(int ncmd, char * infile, char * outfile, int append, int bgn
 		
 		// Preparar redirección de entrada
 		// Si infile tiene redirección de entrada, abrimos el archivo en modo lectura. Una vez lo abrimos, redirigimos la entrada con dup2()
+		int fd_in;
 		if(strcmp(infile, "") != 0){
-			int fd_in = open(infile, O_RDONLY);
+			fd_in = open(infile, O_RDONLY);
 			if(fd_in == -1)		// Manejo de error
 				return 0; 
 		} else {
@@ -69,7 +75,7 @@ extern int pipeline(int ncmd, char * infile, char * outfile, int append, int bgn
 		// Si outfile tiene redirección de salida, decidimos abrir el archivo en modo append o trunc. Una vez lo abrimos, redirigimos la salida con dup2()
 		int fd_out;
 		if(strcmp(outfile, "") != 0){
-			if(append == 1)
+			if(append == 1)				
 				fd_out = open(outfile, O_APPEND);	
 			else
 				fd_out = open(outfile, O_TRUNC);
@@ -97,7 +103,7 @@ extern int pipeline(int ncmd, char * infile, char * outfile, int append, int bgn
 
 
 
-extern int redirigir_entrada(int i)		// i = numero de orden dentro de la línea de órdenes introducida
+ int redirigir_entrada(int i)		// i = numero de orden dentro de la línea de órdenes introducida
 {
 	// Consultar el contenido de la estructura cmdfd para determinar si hay redirección de entrada
 		if(cmdfd[i].infd >= 0){
@@ -116,7 +122,7 @@ extern int redirigir_entrada(int i)		// i = numero de orden dentro de la línea d
 
 
 
-extern int redirigir_salida(int i)
+int redirigir_salida(int i)
 {
 
 	// Consultar el contenido de la estructura cmdfd para determinar si hay redirección de salida
@@ -136,15 +142,22 @@ extern int redirigir_salida(int i)
 } // Fin de la función "redirigir_salida"
 
 
-extern int cerrar_fd(void)
+int cerrar_fd(void)
 {
 	// Recorrer los descriptores en la estructura cmdfd y cerrar aquellos que NO sean los descriptores estándar (0, 1 y 2 [STDIN, STDOUT y STDERR])
 	// Hacer esta comparación tanto para cmd[i].infd como para cmd[i].outfd
 	for(int i = 0; i < PIPELINE; i++){
-		if(cmd[i].infd > 2){
-						
+		if(cmdfd[i].infd > 2){
+			close(cmdfd[i].infd);	
 		}
+
+		if(cmdfd[i].outfd > 2)
+			close(cmdfd[i].infd);
 
 	}
 
+	return 1;
+
 } // Fin de la función "cerrar_fd"
+
+
