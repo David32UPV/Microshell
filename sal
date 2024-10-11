@@ -1,22 +1,25 @@
-Ôþ´ý
-analizador.c
-analizador.h
-analizador.o
-defines.h
-ejecucion.c
-ejecucion.h
-ejecucion.o
-¤fÿ
-”i¸ü
-__MACOSX
-Makefile
-profe_32.a
-profe_64.a
-profe.a
-profe.h
-redireccion.c
-redireccion.h
-redireccion.o
-sal
-ush
-ush.c
+total 148
+-rw-r--r-- 1 david david  4838 Sep 11  2023 analizador.c
+-rw-r--r-- 1 david david 11416 Sep 17 17:26 analizador.h
+-rw-rw-r-- 1 david david  9072 Oct 11 17:51 analizador.o
+-rw-rw-r-- 1 david david   970 Oct 11 17:51 defines.h
+-rw-r--r-- 1 david david  2254 Oct 11 20:21 ejecucion.c
+-rw-r--r-- 1 david david  2559 Sep 17 17:25 ejecucion.h
+-rw-rw-r-- 1 david david  1904 Oct 11 20:22 ejecucion.o
+drwxrwxr-x 2 david david  4096 Sep 20 16:39 __MACOSX
+-rwx------ 1 david david   535 Sep 17 17:44 Makefile
+-rw-r--r-- 1 david david  4996 Jan 30  2009 profe_32.a
+-rw-r--r-- 1 david david  8752 Jan 30  2009 profe_64.a
+-rw-rw-r-- 1 david david  8002 Sep 20 17:58 profe.a
+-rw-r--r-- 1 david david   435 Sep 17 17:47 profe.h
+-rw-rw-r-- 1 david david    46 Oct 11 16:51 README.md
+-rw-r--r-- 1 david david  5025 Oct 11 20:20 redireccion.c
+-rw-r--r-- 1 david david  7475 Sep 17 18:06 redireccion.h
+-rw-rw-r-- 1 david david  3592 Oct 11 20:20 redireccion.o
+-rw-r--r-- 1 david david     0 Oct 11 20:23 sal
+-rw-r--r-- 1 david david   424 Oct 11 12:24 salida1
+-rw-r--r-- 1 david david     0 Oct 11 12:20 salida2
+-rw-r--r-- 1 david david     0 Oct 11 12:22 salida3
+-rw-r--r-- 1 david david  1248 Oct 11 12:04 salida.txt
+-rwxrwxr-x 1 david david 18632 Oct 11 20:22 ush
+-rw-r--r-- 1 david david  7940 Oct 11 19:41 ush.c

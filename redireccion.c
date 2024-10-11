@@ -28,13 +28,10 @@ void redireccion_ini(void)
 	//Inicializar los valores de la estructura cmdfd si no sobrepasamos PIPELINE (CMDFD[PIPELINE - 1])
 	for(int i = 0; i < PIPELINE; i++){
 		
-		cmdfd[0].infd = 0;
-		cmdfd[1].outfd = 1;
+		cmdfd[i].infd = 0;
+		cmdfd[i].outfd = 1;
 
-	}
-
-	// La funcion no va a devolver error (return 0) ya que siempre, como minimo, se va a poner un comando en la linea de comandos
-	
+	}	
 }
 
 // bgnd (background) quiere decir ejecución en segundo plano -> el proceso principal seguirá ejecutándose sin esperar a que terminen los procesos hijos que se creen
@@ -56,7 +53,6 @@ int pipeline(int ncmd, char * infile, char * outfile, int append, int bgnd)
 			// Rellenar cmdfd
 			cmdfd[i].outfd = fd[1];		// La salida del comando actual (cmd[i]) se dirigirá a fd[1], que es la escritura de la tubería
 			cmdfd[i+1].infd = fd[0];	// Configuramos la entrada del proximo comando (cmd[i+1]) para que lea desde f[0], que es la lectura de la tubería
-
 		}
 		
 		// Preparar redirección de entrada
@@ -66,23 +62,23 @@ int pipeline(int ncmd, char * infile, char * outfile, int append, int bgnd)
 			fd_in = open(infile, O_RDONLY);
 			if(fd_in == -1)		// Manejo de error
 				return 0; 
-		} else {
+
 			dup2(fd_in, STDIN_FILENO);
 		}
 
-		// Preparar redirección de salida
+		// Preparar redirección de salida		
 		// Si outfile tiene redirección de salida, decidimos abrir el archivo en modo append o trunc. Una vez lo abrimos, redirigimos la salida con dup2()
 		int fd_out;
 		if(strcmp(outfile, "") != 0){
 			if(append == 1)				
-				fd_out = open(outfile, O_APPEND);	
+				fd_out = open(outfile, O_WRONLY | O_CREAT | O_APPEND, 0644);	
 			else
-				fd_out = open(outfile, O_TRUNC);
+				fd_out = open(outfile, O_WRONLY | O_CREAT | O_TRUNC, 0644);	
 			
 			// Manejo de error
 			if (fd_out == -1)
 				return 0;
-		} else{
+		
 			dup2(fd_out, STDOUT_FILENO);
 		}
 	
@@ -104,12 +100,12 @@ int pipeline(int ncmd, char * infile, char * outfile, int append, int bgnd)
  int redirigir_entrada(int i)		// i = numero de orden dentro de la línea de órdenes introducida
 {
 	// Consultar el contenido de la estructura cmdfd para determinar si hay redirección de entrada
-		if(cmdfd[i].infd >= 0){
+		if(cmdfd[i].infd != -1){
 			// Redirigir entrada estándar a este descriptor
 			dup2(cmdfd[i].infd, STDIN_FILENO);
-			if(cmdfd[i].infd == -1)	// Manejo de error
-				return 0;
-
+			if(cmdfd[i].infd == -1){
+				return 0;	// Manejo de error
+			}
 			return 1;	// Redirección de entrada correcta
 		} else{			// Manejo de error
 			return 0;
@@ -123,12 +119,12 @@ int redirigir_salida(int i)
 {
 
 	// Consultar el contenido de la estructura cmdfd para determinar si hay redirección de salida
-		if(cmdfd[i].outfd >= 0){
+		if(cmdfd[i].outfd != -1){
 			// Redirigir entrada estándar a este descriptor
 			dup2(cmdfd[i].outfd, STDOUT_FILENO);
-			if(cmdfd[i].outfd == -1)	// Manejo de error
+			if(cmdfd[i].outfd == -1){
 				return 0;
-
+			}
 			return 1;	// Redirección de entrada correcta
 		} else{			
 			return 0;	// Manejo de error
@@ -148,7 +144,7 @@ int cerrar_fd(void)
 		}
 
 		if(cmdfd[i].outfd > 2)
-			close(cmdfd[i].infd);
+			close(cmdfd[i].outfd);
 
 	}
 
