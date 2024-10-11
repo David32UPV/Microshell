@@ -68,7 +68,6 @@ int pipeline(int ncmd, char * infile, char * outfile, int append, int bgnd)
 				return 0; 
 		} else {
 			dup2(fd_in, STDIN_FILENO);
-			close(fd_in);	// Como en clase, para no dejar huecos vacíos en la Tabla de Descriptores
 		}
 
 		// Preparar redirección de salida
@@ -85,7 +84,6 @@ int pipeline(int ncmd, char * infile, char * outfile, int append, int bgnd)
 				return 0;
 		} else{
 			dup2(fd_out, STDOUT_FILENO);
-			close(fd_out);
 		}
 	
 	// En caso de ejecución en segundo plano, redirigir(dup2()) la entrada estándar de la 1º orden(STDIN_FILENO) al dispositivo /dev/null 
@@ -112,7 +110,6 @@ int pipeline(int ncmd, char * infile, char * outfile, int append, int bgnd)
 			if(cmdfd[i].infd == -1)	// Manejo de error
 				return 0;
 
-			close(cmdfd[i].infd);
 			return 1;	// Redirección de entrada correcta
 		} else{			// Manejo de error
 			return 0;
@@ -132,7 +129,6 @@ int redirigir_salida(int i)
 			if(cmdfd[i].outfd == -1)	// Manejo de error
 				return 0;
 
-			close(cmdfd[i].outfd);
 			return 1;	// Redirección de entrada correcta
 		} else{			
 			return 0;	// Manejo de error
