@@ -150,7 +150,7 @@ int leerLinea( char *linea, int tamanyLinea )
 	// Si se encuentra un pipe al final de la línea sin comando siguiente se produce un error
 	if(pipe_flag == 1){
 		printf("Error sintáctico: pipe (|) sin comando posterior\n");
-		return -1;
+		return -3;
 	}
 
 	if(c == '\n'){
