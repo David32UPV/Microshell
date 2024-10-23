@@ -62,7 +62,7 @@ int main(int argc, char * argv[])
 	     m_argumentos=get_argumentos();
 	     if(m_n>0)
 	     {
-          if (pipeline_profe(m_n,fich_entrada(),fich_salida(),es_append(),es_background())==OK)
+          if (pipeline(m_n,fich_entrada(),fich_salida(),es_append(),es_background())==OK)
                     ejecutar(m_n,m_num_arg,m_ordenes,m_argumentos,es_background());
         }
 
@@ -199,12 +199,11 @@ void visualizar( void )
 	for(int i = 0; i < n_ord; i++){	
 		printf("Orden: %d: %s\n", i+1, ordenes[i]);		// i+1 y no i para que el usuario vea que empieza con la orden 1 y no 0
 		printf("Número de argumentos: %d\n", n_arg[i]);
-		
-		// Bucle que recorre cada orgumento de la orden
+
 		for(int j = 0; j < n_arg[i]; j++){		
 			printf("Argumento: %d: %s\n", j+1, argumentos[i][j]);
 			
-		}
+		}	
 	}
 		
 	// Si hay redirección de entrada se indica el fichero de la redirección
