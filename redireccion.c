@@ -36,13 +36,14 @@ void redireccion_ini(void)
 
 // bgnd (background) quiere decir ejecución en segundo plano -> el proceso principal seguirá ejecutándose sin esperar a que terminen los procesos hijos que se creen
 int pipeline(int ncmd, char * infile, char * outfile, int append, int bgnd)
-{
+{	
+
 	if(!bgnd){
 		
 		// 1) Realizar la llamada a la función redireccion_ini para inicializar el vector cmdfd, cuyas componentes tienen todos los descriptores de fichero
 		redireccion_ini();
 
-		// 2) Preparar la redirección de la entrada y salida estándar, si fuera necesario.   
+  		// 2) Preparar la redirección de la entrada y salida estándar, si fuera necesario.   
 		// Para ello, se almacenará la información sobre los descriptores de entrada y/o salida redirigidos(que estan en redireccion), en el vector cmdfd.
 		for (int i = 0; i < ncmd - 1; i++){
 					
@@ -57,37 +58,32 @@ int pipeline(int ncmd, char * infile, char * outfile, int append, int bgnd)
 		
 		// Preparar redirección de entrada
 		// Si infile tiene redirección de entrada, abrimos el archivo en modo lectura. Una vez lo abrimos, redirigimos la entrada con dup2()
-		int fd_in;
 		if(strcmp(infile, "") != 0){
-			fd_in = open(infile, O_RDONLY);
-			if(fd_in == -1)		// Manejo de error
+			cmdfd[0].infd = open(infile, O_RDONLY);
+			if(cmdfd[0].infd == -1)		// Manejo de error
 				return 0; 
-
-			dup2(fd_in, STDIN_FILENO);
 		}
 
 		// Preparar redirección de salida		
 		// Si outfile tiene redirección de salida, decidimos abrir el archivo en modo append o trunc. Una vez lo abrimos, redirigimos la salida con dup2()
-		int fd_out;
 		if(strcmp(outfile, "") != 0){
 			if(append == 1)				
-				fd_out = open(outfile, O_WRONLY | O_CREAT | O_APPEND, 0644);	
+				cmdfd[ncmd - 1].outfd = open(outfile, O_WRONLY | O_CREAT | O_APPEND, 0644);	
 			else
-				fd_out = open(outfile, O_WRONLY | O_CREAT | O_TRUNC, 0644);	
+				cmdfd[ncmd - 1].outfd = open(outfile, O_WRONLY | O_CREAT | O_TRUNC, 0644);	
 			
 			// Manejo de error
-			if (fd_out == -1)
+			if (cmdfd[ncmd - 1].outfd == -1)
 				return 0;
-		
-			dup2(fd_out, STDOUT_FILENO);
 		}
+
 	
 	// En caso de ejecución en segundo plano, redirigir(dup2()) la entrada estándar de la 1º orden(STDIN_FILENO) al dispositivo /dev/null 
 	} else{
 		// Primero abrimos /dev/null
-		int f2_null = open("/dev/null", O_RDONLY);
-		// Ahora redirigimos la primera orden de la entrada estándar a /dev/null
-		dup2(f2_null, STDIN_FILENO);
+		cmdfd[0].infd = open("/dev/null", O_RDONLY);
+		if (cmdfd[0].infd == -1) 
+			return 0;
 	}
 
 	// Ejecución correcta
@@ -100,16 +96,15 @@ int pipeline(int ncmd, char * infile, char * outfile, int append, int bgnd)
  int redirigir_entrada(int i)		// i = numero de orden dentro de la línea de órdenes introducida
 {
 	// Consultar el contenido de la estructura cmdfd para determinar si hay redirección de entrada
-		if(cmdfd[i].infd != -1){
+		if(cmdfd[i].infd != 0){
 			// Redirigir entrada estándar a este descriptor
 			dup2(cmdfd[i].infd, STDIN_FILENO);
-			if(cmdfd[i].infd == -1){
-				return 0;	// Manejo de error
-			}
-			return 1;	// Redirección de entrada correcta
-		} else{			// Manejo de error
+		}
+		else{			// Manejo de error
 			return 0;
 		}
+	
+		return 1;	// Redirección de entrada correcta
 
 } // Fin de la función "redirigir_entrada"
 
@@ -119,17 +114,15 @@ int redirigir_salida(int i)
 {
 
 	// Consultar el contenido de la estructura cmdfd para determinar si hay redirección de salida
-		if(cmdfd[i].outfd != -1){
+		if(cmdfd[i].outfd != 1){
 			// Redirigir entrada estándar a este descriptor
 			dup2(cmdfd[i].outfd, STDOUT_FILENO);
-			if(cmdfd[i].outfd == -1){
-				return 0;
-			}
-			return 1;	// Redirección de entrada correcta
-		} else{			
+		}
+		else{			
 			return 0;	// Manejo de error
 		}
 
+		return 1;	// Redirección de salida correcta
 
 } // Fin de la función "redirigir_salida"
 
@@ -140,12 +133,13 @@ int cerrar_fd(void)
 	// Hacer esta comparación tanto para cmd[i].infd como para cmd[i].outfd
 	for(int i = 0; i < PIPELINE; i++){
 		if(cmdfd[i].infd > 2){
-			close(cmdfd[i].infd);	
+			close(cmdfd[i].infd);
 		}
 
-		if(cmdfd[i].outfd > 2)
+		if(cmdfd[i].outfd > 2){
 			close(cmdfd[i].outfd);
-
+		}
+			
 	}
 
 	return 1;

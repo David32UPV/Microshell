@@ -119,6 +119,7 @@ int leerLinea( char *linea, int tamanyLinea )
 	char c, *p;		// *p = *linea (esto lo hacemos bien hecho en la línea 121: puntero = puntero).
 	int i = 0;
 	int pipe_flag = 0;		// Variable que nos servirá para realizar un seguimiento de cuando se encuetra una tubería o pipe(|)
+	int redireccion_flag = 0;
 	p = linea;
 	// Si i = tamanyLinea, debe haber un espacio para el terminador nulo '\0'
 	while((c = getchar()) != EOF && c != '\n' && i < (tamanyLinea - 1)){
@@ -132,7 +133,12 @@ int leerLinea( char *linea, int tamanyLinea )
 			pipe_flag = 1;
 		else if (c != ' ' && pipe_flag == 1)	// Si después del pipe encontramos otro caráceter que no es un espacio en blanco -> el comando es correcto
 			pipe_flag = 0;
-			
+		
+		// Detectamos si el carácter leído es un pipe '|'
+		if(c == '>' || c == '<')
+			redireccion_flag = 1;
+		else if (c != ' ' && redireccion_flag == 1)	// Si después del pipe encontramos otro caráceter que no es un espacio en blanco -> el comando es correcto
+			redireccion_flag= 0;			
 	}
 	
 	// Condiciones para cuando se sale del bucle:
@@ -151,6 +157,13 @@ int leerLinea( char *linea, int tamanyLinea )
 	if(pipe_flag == 1){
 		printf("Error sintáctico: pipe (|) sin comando posterior\n");
 		return -3;
+	}
+
+
+	// Si se encuentra un pipe al final de la línea sin comando siguiente se produce un error
+	if(redireccion_flag == 1){
+		printf("Error sintáctico: redireccion (< o >) sin comando posterior\n");
+		return -4;
 	}
 
 	if(c == '\n'){
@@ -213,6 +226,7 @@ void visualizar( void )
 	} else
 		printf("No hay redirección de entrada\n");
 
+	// Si hay redirección de salida se indica el fichero de la redirección + indicar si la redirección se ha realizado en modo append o en modo trunc
 	// Si hay redirección de salida se indica el fichero de la redirección + indicar si la redirección se ha realizado en modo append o en modo trunc
 	char *f_salida = fich_salida();
 	if(f_salida != NULL && strlen(f_salida) > 0){

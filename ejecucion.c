@@ -37,7 +37,10 @@ int ejecutar (int nordenes , int *nargs , char **ordenes , char ***args , int bg
 			// args[i] es un array de punteros a cadenas de caracteres (el conjunto de argumentos que se pasan al programa que se va a ejecutar)
 			// e.g si yo pongo ls -l | grep profe, el execv seria execvp("ls", ["ls", "-l", NULL]); y esto reemplaza al hijo con el proceso que ejecuta ls -l.
 			// Después el padre crearia con fork() el nuevo hijo que se sustituiría por grep profe, y así sucesivamente con cada nuevo comando que reciba la shell
-			execvp(ordenes[i], args[i]);	// Cambia la imagen del proceso hijo por la del ejecutable asociado a la orden (e.g. ls, cat, grep, etc.)
+   		 	if (execvp(ordenes[i], args[i]) == -1) {
+        		perror("Error al ejecutar el comando");  // Mensaje específico de error
+				exit(1);  // Finaliza el proceso hijo con un error
+    		}
 
 			// Si execvp tiene éxito, el proceso hijo ejecuta el nuevo programa y si falla el hijo continua ejecutandose 
 		}
